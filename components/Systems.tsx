@@ -9,7 +9,7 @@ const questions = [
   { id: 'q2', keyword: ' shareReplay ', prefix: '', suffix: ' over refetching?' },
   { id: 'q3', keyword: 'Next.js', prefix: 'choose ', suffix: ' over raw React?' },
   { id: 'q4', keyword: 'Zustand', prefix: 'prefer ', suffix: ' instead of Redux?' },
-  { id: 'q5', keyword: 'PostgreSQL', prefix: 'stick with ', suffix: ' for the core database?' },
+  { id: 'q5', keyword: 'PostgreSQL', prefix: 'stick with ', suffix: ' for the database?' },
   { id: 'q6', keyword: 'Redis', prefix: 'introduce ', suffix: ' for caching?' },
   { id: 'q7', keyword: 'Tailwind', prefix: 'use ', suffix: ' instead of CSS modules?' },
   { id: 'q8', keyword: 'monorepo', prefix: 'build a ', suffix: ' for all packages?' },
@@ -20,10 +20,11 @@ const questions = [
 export function Systems() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [activeScale, setActiveScale] = useState(1)
+  const [isHovered, setIsHovered] = useState(false)
 
   const targetIndexRef = useRef(0)
   const isWheelScrollingRef = useRef(false)
+  const directionRef = useRef(1)
 
   useEffect(() => {
     const container = containerRef.current
@@ -38,17 +39,18 @@ export function Systems() {
       
       accumulatedDelta += e.deltaY
       
-      if (Math.abs(accumulatedDelta) >= 80) {
-        const ticks = Math.trunc(accumulatedDelta / 80)
+      if (Math.abs(accumulatedDelta) >= 60) {
+        const direction = Math.sign(accumulatedDelta)
         
-        targetIndexRef.current = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + ticks))
+        targetIndexRef.current = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + direction))
         
         container.scrollTo({
           top: targetIndexRef.current * 48,
           behavior: 'smooth'
         })
         
-        accumulatedDelta = accumulatedDelta % 80
+        // Reset completely to prevent remainder accumulation causing double-jumps on mouse wheels
+        accumulatedDelta = 0
       }
 
       clearTimeout(wheelTimeout)
@@ -83,38 +85,49 @@ export function Systems() {
   }, [])
 
   useEffect(() => {
+    if (isHovered) return
+
     const container = containerRef.current
-    if (!container) return
+    if (!container || questions.length <= 1) return
 
-    const calculateScale = () => {
-      const activeItem = container.children[activeIndex] as HTMLElement
-      if (!activeItem) return
-      
-      const availableWidth = container.clientWidth
-      const naturalWidth = activeItem.scrollWidth
-      
-      if (naturalWidth > 0 && availableWidth > 0) {
-        setActiveScale(Math.min(1, availableWidth / naturalWidth))
+    const intervalId = setInterval(() => {
+      if (isWheelScrollingRef.current) return
+
+      let nextIndex = targetIndexRef.current + directionRef.current
+
+      if (nextIndex >= questions.length) {
+        directionRef.current = -1
+        nextIndex = questions.length - 2
+      } else if (nextIndex < 0) {
+        directionRef.current = 1
+        nextIndex = 1
       }
-    }
 
-    calculateScale()
+      targetIndexRef.current = nextIndex
 
-    const observer = new ResizeObserver(() => {
-      calculateScale()
-    })
-    observer.observe(container)
+      container.scrollTo({
+        top: nextIndex * 48,
+        behavior: 'smooth'
+      })
+    }, 2000) // 1.5 seconds per tick
 
-    return () => observer.disconnect()
-  }, [activeIndex])
+    return () => clearInterval(intervalId)
+  }, [isHovered])
 
   return (
-    <motion.section className="systems-section" variants={reveal} aria-labelledby="systems-title">
+    <motion.section 
+      layout
+      className="systems-section" 
+      variants={reveal} 
+      aria-labelledby="systems-title"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="systems-intro">
         <div>
-          <h2 id="systems-title">Systems.</h2>
+          <h2 id="systems-title">Decisions.</h2>
         </div>
-        <p className="systems-lede">Small technical decisions.</p>
+        <p className="systems-lede">A few choices, and why I made them.</p>
       </div>
       
       <div className="picker-wrapper">
@@ -125,7 +138,6 @@ export function Systems() {
             <div 
               key={index} 
               className={`picker-item ${index === activeIndex ? 'active' : ''}`}
-              style={{ '--fit-scale': index === activeIndex ? activeScale : 1 } as React.CSSProperties}
             >
               {q.prefix ? q.prefix.trim() + ' ' : ''}
               <span className="text-highlight">{q.keyword}</span>

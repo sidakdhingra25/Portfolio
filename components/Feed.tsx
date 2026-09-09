@@ -5,7 +5,7 @@ import { reveal } from './animations'
 
 export function Feed() {
   return (
-    <motion.section variants={reveal} aria-labelledby="feed-title">
+    <motion.section layout variants={reveal} aria-labelledby="feed-title">
       <h2 id="feed-title" className="section-title">My feed.</h2>
       <div className="feed-grid">
         <div>
