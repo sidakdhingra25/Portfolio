@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import { Header } from '../components/Header'
 import { Intro } from '../components/Intro'
 import { Projects } from '../components/Projects'
-import { Toolkit } from '../components/Toolkit'
+
 import { Feed } from '../components/Feed'
+import { Systems } from '@/components/Systems'
 
 export default function Page() {
   return (
@@ -19,7 +20,7 @@ export default function Page() {
         <Header />
         <Intro />
         <Projects />
-        <Toolkit />
+        <Systems />
         <Feed />
       </motion.div>
     </main>
