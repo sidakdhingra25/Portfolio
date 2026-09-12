@@ -6,6 +6,12 @@ export function Intro() {
   return (
     <motion.section className="intro" variants={reveal} aria-labelledby="intro-title">
       <h1 id="intro-title" className="sr-only">Sidak Dhingra portfolio</h1>
+      
+      <div className="mb-4">
+        <div className="name text-xl mb-1">Sidak Dhingra</div>
+        <div className="eyebrow text-sm">Fullstack Developer and more...</div>
+      </div>
+
       <p className="location flex items-center gap-1.5">
         23 years old, based in <span className="inline-flag">🇮🇳</span> India.
       </p>

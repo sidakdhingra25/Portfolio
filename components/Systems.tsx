@@ -30,37 +30,18 @@ export function Systems() {
     const container = containerRef.current
     if (!container) return
 
-    let accumulatedDelta = 0
     let wheelTimeout: NodeJS.Timeout
 
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
       isWheelScrollingRef.current = true
       
-      accumulatedDelta += e.deltaY
-      
-      if (Math.abs(accumulatedDelta) >= 60) {
-        const direction = Math.sign(accumulatedDelta)
-        
-        targetIndexRef.current = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + direction))
-        
-        container.scrollTo({
-          top: targetIndexRef.current * 48,
-          behavior: 'smooth'
-        })
-        
-        // Reset completely to prevent remainder accumulation causing double-jumps on mouse wheels
-        accumulatedDelta = 0
-      }
-
       clearTimeout(wheelTimeout)
       wheelTimeout = setTimeout(() => {
-        accumulatedDelta = 0
         isWheelScrollingRef.current = false
       }, 150)
     }
     
-    container.addEventListener('wheel', handleWheel, { passive: false })
+    container.addEventListener('wheel', handleWheel, { passive: true })
 
     const handleScroll = () => {
       const itemHeight = 48
@@ -114,6 +95,17 @@ export function Systems() {
     return () => clearInterval(intervalId)
   }, [isHovered])
 
+  const handleItemClick = (index: number) => {
+    const container = containerRef.current
+    if (!container) return
+    
+    targetIndexRef.current = index
+    container.scrollTo({
+      top: index * 48,
+      behavior: 'smooth'
+    })
+  }
+
   return (
     <motion.section 
       layout
@@ -137,6 +129,7 @@ export function Systems() {
           {questions.map((q, index) => (
             <div 
               key={index} 
+              onClick={() => handleItemClick(index)}
               className={`picker-item ${index === activeIndex ? 'active' : ''}`}
             >
               {q.prefix ? q.prefix.trim() + ' ' : ''}
