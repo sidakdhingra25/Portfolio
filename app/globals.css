@@ -168,7 +168,7 @@ button { font: inherit; }
 .intro .pill { display: inline-flex; align-items: center; font-weight: 500; color: var(--foreground); text-decoration: underline; text-decoration-color: #565650; text-underline-offset: 3px; background: transparent; padding: 0 2px; }
 .intro p { margin: 0 0 24px; }
 .intro p:last-child { margin-bottom: 0; }
-.location { margin-bottom: 14px !important; color: #b5b5b0; font-size: 13px; }
+.location { margin-bottom: 14px !important; color: #000000; font-size: 13px; }
 .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--surface); color: var(--foreground); font-size: 12.5px; line-height: 1.55; }
 
 

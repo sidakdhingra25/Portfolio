@@ -5,16 +5,11 @@ import { motion } from 'framer-motion'
 import { reveal } from './animations'
 
 const questions = [
-  { id: 'q1', keyword: ' LLM ', prefix: ' split the ', suffix: ' from the rule engine?' },
-  { id: 'q2', keyword: ' shareReplay ', prefix: '', suffix: ' over refetching?' },
-  { id: 'q3', keyword: 'Next.js', prefix: 'choose ', suffix: ' over raw React?' },
-  { id: 'q4', keyword: 'Zustand', prefix: 'prefer ', suffix: ' instead of Redux?' },
-  { id: 'q5', keyword: 'PostgreSQL', prefix: 'stick with ', suffix: ' for the database?' },
-  { id: 'q6', keyword: 'Redis', prefix: 'introduce ', suffix: ' for caching?' },
-  { id: 'q7', keyword: 'Tailwind', prefix: 'use ', suffix: ' instead of CSS modules?' },
-  { id: 'q8', keyword: 'monorepo', prefix: 'build a ', suffix: ' for all packages?' },
-  { id: 'q9', keyword: 'Framer Motion', prefix: 'animate with ', suffix: '?' },
-  { id: 'q10', keyword: 'WebSockets', prefix: 'use ', suffix: ' for live updates?' },
+  { id: 'inline-arrow-function', keyword: 'inline arrow functions', prefix: '', suffix: ' break OnPush?' },
+  { id: 'sharereplay', keyword: 'shareReplay()', prefix: '', suffix: ' leaks subscriptions?' },
+  { id: 'typescript-any', keyword: 'any', prefix: 'one ', suffix: ' disables type checking?' },
+  { id: 'json-deep-clone', keyword: 'JSON.stringify', prefix: '', suffix: ' fails as a deep clone?' },
+  { id: 'typescript-runtime-types', keyword: 'TypeScript types', prefix: '', suffix: ' fail at runtime?' },
 ]
 
 export function Systems() {
@@ -25,23 +20,67 @@ export function Systems() {
   const targetIndexRef = useRef(0)
   const isWheelScrollingRef = useRef(false)
   const directionRef = useRef(1)
+  
+  const isProgrammaticScrollRef = useRef(false)
+  const programmaticTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+
+  const executeProgrammaticScroll = (index: number) => {
+    const container = containerRef.current
+    if (!container) return
+    
+    targetIndexRef.current = index
+    isProgrammaticScrollRef.current = true
+    
+    container.style.scrollSnapType = 'none'
+    container.scrollTo({
+      top: index * 48,
+      behavior: 'smooth'
+    })
+    
+    clearTimeout(programmaticTimeoutRef.current)
+    programmaticTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false
+      if (container) container.style.scrollSnapType = ''
+    }, 600)
+  }
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
     let wheelTimeout: NodeJS.Timeout
+    let wheelAccumulator = 0
+    let lastWheelTime = Date.now()
 
     const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
       isWheelScrollingRef.current = true
       
       clearTimeout(wheelTimeout)
       wheelTimeout = setTimeout(() => {
         isWheelScrollingRef.current = false
+        wheelAccumulator = 0
       }, 150)
+
+      const now = Date.now()
+      if (now - lastWheelTime > 150) {
+        wheelAccumulator = 0
+      }
+      lastWheelTime = now
+      wheelAccumulator += e.deltaY
+      
+      if (Math.abs(wheelAccumulator) >= 50) {
+        const direction = wheelAccumulator > 0 ? 1 : -1
+        const nextIndex = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + direction))
+        
+        if (nextIndex !== targetIndexRef.current) {
+          executeProgrammaticScroll(nextIndex)
+        }
+        wheelAccumulator = 0
+      }
     }
     
-    container.addEventListener('wheel', handleWheel, { passive: true })
+    container.addEventListener('wheel', handleWheel, { passive: false })
 
     const handleScroll = () => {
       const itemHeight = 48
@@ -49,8 +88,8 @@ export function Systems() {
       setActiveIndex(index)
       
       // Only sync the target index if the user is scrolling manually (dragging/touch)
-      // If they are using the wheel, let the wheel logic own the target index to prevent stuttering
-      if (!isWheelScrollingRef.current) {
+      // Ignore during programmatic scrolls so we don't clobber the target before we reach it
+      if (!isProgrammaticScrollRef.current) {
         targetIndexRef.current = index
       }
     }
@@ -62,6 +101,7 @@ export function Systems() {
       container.removeEventListener('wheel', handleWheel)
       container.removeEventListener('scroll', handleScroll)
       clearTimeout(wheelTimeout)
+      clearTimeout(programmaticTimeoutRef.current)
     }
   }, [])
 
@@ -84,26 +124,16 @@ export function Systems() {
         nextIndex = 1
       }
 
-      targetIndexRef.current = nextIndex
-
-      container.scrollTo({
-        top: nextIndex * 48,
-        behavior: 'smooth'
-      })
+      executeProgrammaticScroll(nextIndex)
     }, 2000) // 1.5 seconds per tick
 
     return () => clearInterval(intervalId)
   }, [isHovered])
 
   const handleItemClick = (index: number) => {
-    const container = containerRef.current
-    if (!container) return
-    
-    targetIndexRef.current = index
-    container.scrollTo({
-      top: index * 48,
-      behavior: 'smooth'
-    })
+    if (index !== activeIndex) {
+      executeProgrammaticScroll(index)
+    }
   }
 
   return (
@@ -112,8 +142,8 @@ export function Systems() {
       className="systems-section" 
       variants={reveal} 
       aria-labelledby="systems-title"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onPointerEnter={() => setIsHovered(true)}
+      onPointerLeave={() => setIsHovered(false)}
     >
       <div className="systems-intro">
         <div>
