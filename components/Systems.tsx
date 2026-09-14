@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { reveal } from './animations'
+import Link from 'next/link'
 
 const questions = [
   { id: 'inline-arrow-function', keyword: 'inline arrow functions', prefix: '', suffix: ' break OnPush?' },
@@ -157,15 +158,21 @@ export function Systems() {
         
         <div className="picker-container" ref={containerRef}>
           {questions.map((q, index) => (
-            <div 
+            <Link
+              href={`/blog/${q.id}`}
               key={index} 
-              onClick={() => handleItemClick(index)}
+              onClick={(e) => {
+                if (index !== activeIndex) {
+                  e.preventDefault()
+                  handleItemClick(index)
+                }
+              }}
               className={`picker-item ${index === activeIndex ? 'active' : ''}`}
             >
               {q.prefix ? q.prefix.trim() + ' ' : ''}
               <span className="text-highlight">{q.keyword}</span>
               {q.suffix ? ' ' + q.suffix.trim() : ''}
-            </div>
+            </Link>
           ))}
         </div>
       </div>
