@@ -10,6 +10,27 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
   },
+  openGraph: {
+    title: 'Sidak Dhingra',
+    description: 'Portfolio of Sidak Dhingra, a software developer based in India.',
+    siteName: 'Sidak Dhingra',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Sidak Dhingra - Software Engineer',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sidak Dhingra',
+    description: 'Portfolio of Sidak Dhingra, a software developer based in India.',
+    images: ['/og-image.png'],
+  },
 }
 
 export const viewport: Viewport = {
