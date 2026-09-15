@@ -10,15 +10,15 @@ export function Feed() {
       <div className="feed-grid">
         <div>
           <div className="feed-tile feed-paper relative overflow-hidden">
-            <Image src="/76432d604e8201cb50731f2c1fc95cfb.jpg" alt="Feed image 1" fill className="object-cover" />
+            <Image src="/taj.jpeg" alt="Feed image 1" fill className="object-cover" />
           </div>
           <div className="feed-tile feed-brown relative overflow-hidden">
-            <Image src="/68828613cb1212fc4f3cad3452f9b399.jpg" alt="Feed image 2" fill className="object-cover" />
+            <Image src="/movie.jpeg" alt="Feed image 2" fill className="object-cover" />
           </div>
         </div>
         <div>
           <div className="feed-tile feed-dark relative overflow-hidden">
-            <Image src="/40c6f2390f3c94b4f8f490cadb248965.jpg" alt="Feed image 3" fill className="object-cover" />
+            <Image src="/ranthambore.jpeg" alt="Feed image 3" fill className="object-cover" />
           </div>
           <div className="feed-tile feed-tan relative overflow-hidden">
             <Image src="/4d72cdfe3e07ee7007fa2c04511fecb2.jpg" alt="Feed image 4" fill className="object-cover" />

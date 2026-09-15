@@ -44,7 +44,7 @@ export function Intro() {
       </div>
 
       <p className="location flex items-center gap-1.5">
-        I'm 23, based in <span className="inline-flag">🇮🇳</span> India.
+        I'm 23, based in <img src="https://flagcdn.com/w20/in.png" srcSet="https://flagcdn.com/w40/in.png 2x" width="15" alt="India flag" className="inline-block mx-0.5 rounded-[1.5px]" style={{ verticalAlign: '-2px' }} /> India.
       </p>
       <p>
         Currently working as a <strong>Software Developer at <a href="https://www.quadlabs.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-baseline gap-1 group"><img src="https://www.google.com/s2/favicons?domain=quadlabs.com&sz=32" alt="QuadLabs" className="w-4 h-4 self-center rounded-xs" /><span className="underline underline-offset-2">QuadLabs</span></a></strong>, building web applications while also spending my time outside work building my own <strong><a href="#projects" onClick={(e) => { e.preventDefault(); lenis?.scrollTo('#projects'); }} className="inline-flex items-baseline gap-1 group"><Code className="w-4 h-4 self-center" /><span className="underline underline-offset-2">Projects</span></a></strong>, exploring new ideas, and experimenting with different technologies.
