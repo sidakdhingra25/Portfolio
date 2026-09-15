@@ -1,0 +1,84 @@
+---
+title: "Why an inline function prop can quietly defeat Angular's OnPush"
+date: "Sept 15, 2026"
+category: "Engineering"
+readTime: "6 min read"
+---
+
+OnPush is Angular's way of saying "don't bother re-checking this component unless something it actually depends on has changed." It's one of the first things people reach for when an app starts feeling sluggish. It's also one of the easiest optimizations to accidentally cancel out with a single line of template code that looks completely harmless.
+
+## What OnPush actually checks
+
+By default, Angular re-checks every component in the tree on basically every browser event, timer, or HTTP response — anything zone.js can see. That's safe, but expensive at scale. `ChangeDetectionStrategy.OnPush` narrows that down: a component only gets re-checked when one of a few specific things happens — an `@Input()` reference changes, an event originates from inside the component itself, an `async` pipe emits, or something calls `markForCheck()` manually.
+
+The important word there is *reference*. Angular isn't comparing whether two objects are deeply equal — it's comparing whether they're the same object in memory. That's what makes OnPush cheap. It's also exactly what makes it easy to defeat.
+
+## The setup
+
+Say you've got a child component that takes a callback as an input, instead of the more idiomatic `@Output()` + `EventEmitter` pattern — this shows up more than you'd expect, especially in codebases with React developers moving into Angular:
+
+```typescript
+@Component({
+  selector: 'app-save-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<button (click)="onSave()">Save</button>`
+})
+export class SaveButtonComponent {
+  @Input() onSave!: () => void;
+}
+```
+
+And in the parent's template, the callback gets passed inline:
+
+```html
+<!-- parent.component.html -->
+<app-save-button [onSave]="() => save(item)"></app-save-button>
+```
+
+This compiles. It runs. It even works, in the sense that clicking Save calls `save(item)` correctly. The problem is invisible until you go looking for it.
+
+## Why it defeats OnPush
+
+Every time Angular runs a change-detection pass on the parent — for *any* reason, anywhere else in the app — it re-evaluates every expression in the parent's template. That includes `() => save(item)`. And an arrow function literal creates a **brand-new function object** every single time it's evaluated, even if `item` and `save` are exactly the same as last time.
+
+So `SaveButtonComponent` receives a new `onSave` reference on every parent check. Angular's OnPush comparison sees `oldRef !== newRef`, concludes something changed, and marks the child for a full check — every time, regardless of whether anything meaningful actually changed. You haven't broken OnPush in the sense that it's doing the wrong thing; it's doing exactly what it was told. You've just made it impossible for OnPush to ever conclude "nothing changed," because you're feeding it a fresh reference every time by construction.
+
+> "OnPush doesn't know your data is the same. It only knows the reference is different — and an inline arrow function guarantees the reference is always different."
+
+## The fix
+
+Give the function a stable identity instead of creating it inline. An arrow function defined as a class field is created exactly once, when the component instance is constructed — the same reference survives every future change-detection pass:
+
+```typescript
+export class ParentComponent {
+  item = /* ... */;
+
+  save = () => {
+    // ... actual save logic
+  };
+}
+```
+
+```html
+<!-- parent.component.html -->
+<app-save-button [onSave]="save"></app-save-button>
+```
+
+Now the same function object is passed on every check. OnPush's reference comparison finds no change, and `SaveButtonComponent` is correctly skipped — which is the entire point of using OnPush in the first place.
+
+A cleaner fix, and the more idiomatic Angular one: don't pass callbacks as `@Input()` at all. Use `@Output()` with an `EventEmitter`, created once as a class field, and let the child emit while the parent listens:
+
+```typescript
+@Component({ /* ... */ })
+export class SaveButtonComponent {
+  @Output() save = new EventEmitter<void>();
+}
+```
+
+Outputs aren't part of OnPush's input-reference comparison at all, so this sidesteps the whole category of bug rather than just fixing one instance of it.
+
+## The part that generalizes
+
+This isn't really an Angular story. It's a reference-versus-value story, and it shows up under a different name in almost every framework that optimizes around identity checks. React's `memo` gets defeated by an inline arrow function prop the same way, for the same reason — which is why `useCallback` exists. A Redux selector that returns a brand-new object literal every call will make a `connect`-wrapped component re-render on every dispatch, even when the underlying data hasn't changed. Mutating an object in place instead of replacing it with a new reference can make a UI silently fail to update at all — the exact opposite failure mode, caused by the exact same underlying assumption.
+
+The lesson underneath all of it: any optimization that trusts reference equality as a cheap stand-in for "did this actually change" is only as good as your discipline about not creating new references for things that didn't. It's a cheap check by design — which means it's also cheap to accidentally sabotage.

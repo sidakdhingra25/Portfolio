@@ -7,10 +7,9 @@ import Link from 'next/link'
 
 const questions = [
   { id: 'inline-arrow-function', keyword: 'inline arrow functions', prefix: '', suffix: ' break OnPush?' },
-  { id: 'sharereplay', keyword: 'shareReplay()', prefix: '', suffix: ' leaks subscriptions?' },
-  { id: 'typescript-any', keyword: 'any', prefix: 'one ', suffix: ' disables type checking?' },
-  { id: 'json-deep-clone', keyword: 'JSON.stringify', prefix: '', suffix: ' fails as a deep clone?' },
-  { id: 'typescript-runtime-types', keyword: 'TypeScript types', prefix: '', suffix: ' fail at runtime?' },
+  { id: 'pass-function-react', keyword: 'you can\'t pass a function', prefix: '', suffix: ' as a prop from a Server Component to a Client Component' },
+  { id: 'llm-schema', keyword: 'LLM\'s output', prefix: 'you should force an ', suffix: ' into a schema instead of just parsing whatever text comes back' },
+
 ]
 
 export function Systems() {
@@ -33,10 +32,16 @@ export function Systems() {
     isProgrammaticScrollRef.current = true
     
     container.style.scrollSnapType = 'none'
-    container.scrollTo({
-      top: index * 48,
-      behavior: 'smooth'
-    })
+    
+    const items = container.querySelectorAll('.picker-item')
+    if (items[index]) {
+      const targetItem = items[index] as HTMLElement
+      const scrollPos = targetItem.offsetTop - (container.clientHeight / 2) + (targetItem.clientHeight / 2)
+      container.scrollTo({
+        top: scrollPos,
+        behavior: 'smooth'
+      })
+    }
     
     clearTimeout(programmaticTimeoutRef.current)
     programmaticTimeoutRef.current = setTimeout(() => {
@@ -84,14 +89,29 @@ export function Systems() {
     container.addEventListener('wheel', handleWheel, { passive: false })
 
     const handleScroll = () => {
-      const itemHeight = 48
-      const index = Math.max(0, Math.min(questions.length - 1, Math.round(container.scrollTop / itemHeight)))
-      setActiveIndex(index)
+      if (!container) return
+      
+      const center = container.scrollTop + container.clientHeight / 2
+      const items = container.querySelectorAll('.picker-item')
+      let closestIndex = 0
+      let minDiff = Infinity
+
+      items.forEach((item, index) => {
+        const el = item as HTMLElement
+        const itemCenter = el.offsetTop + el.clientHeight / 2
+        const diff = Math.abs(itemCenter - center)
+        if (diff < minDiff) {
+          minDiff = diff
+          closestIndex = index
+        }
+      })
+      
+      setActiveIndex(closestIndex)
       
       // Only sync the target index if the user is scrolling manually (dragging/touch)
       // Ignore during programmatic scrolls so we don't clobber the target before we reach it
       if (!isProgrammaticScrollRef.current) {
-        targetIndexRef.current = index
+        targetIndexRef.current = closestIndex
       }
     }
     

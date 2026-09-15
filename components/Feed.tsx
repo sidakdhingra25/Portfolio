@@ -33,7 +33,7 @@ export function Feed() {
           </div>
         </div>
       </div>
-      <motion.a className="view-all" href="#feed" whileHover={{ gap: '10px' }} transition={{ duration: 0.2 }}>View all <ArrowUpRight /></motion.a>
+      {/* <motion.a className="view-all" href="#feed" whileHover={{ gap: '10px' }} transition={{ duration: 0.2 }}>View all <ArrowUpRight /></motion.a> */}
     </motion.section>
   )
 }

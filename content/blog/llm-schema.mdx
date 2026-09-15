@@ -1,0 +1,66 @@
+---
+title: "Why you should force an LLM's output into a schema instead of just parsing whatever text comes back"
+date: "Sept 15, 2026"
+category: "AI/ML"
+readTime: "6 min read"
+---
+
+I ran into this directly building a damage-claim verification system for the HackerRank Orchestrate hackathon: a pipeline that judges insurance photo evidence using an LLM, then hands that judgment to a deterministic rule engine for the actual risk decision. The moment you try to connect those two stages, one question becomes unavoidable — what exactly is the LLM allowed to say back to you, and in what shape?
+
+## The problem isn't wrong answers — it's inconsistent shape
+
+It's tempting to prompt a model, get text back, and parse it with a regex or a string search for keywords. That works right up until the model's output format drifts — and it will, because free-text generation is non-deterministic in *structure*, not just content. Ask the same question twice and you might get a paragraph one time and a bulleted list the next, or JSON wrapped in a markdown code fence, or JSON with a friendly sentence in front of it explaining what it's about to show you. None of those are wrong, exactly — they're all reasonable ways to answer the question in natural language. But code that was written to parse "however it answered last time" breaks silently the first time the format changes, and it changes more often than people expect.
+
+For a two-stage pipeline like the claim-verification system, that's not a cosmetic problem. The rule engine downstream is deterministic by design — it needs specific fields, in specific types, to make a specific risk decision. If the LLM stage hands it a string that's *usually* parseable, the rule engine inherits all of that uncertainty without having any way to detect it.
+
+## What schema-constrained output actually does
+
+Structured output isn't about asking more politely for JSON in the prompt. Providers that support it — Gemini included — take a schema as part of the request and constrain generation itself against that schema, rather than leaving formatting entirely up to the model's judgment:
+
+```python
+generationConfig = {
+  "responseMimeType": "application/json",
+  "responseSchema": schema,  # the exact shape the response must take
+}
+```
+
+That shifts the guarantee from "the model was instructed to output JSON" to "the model was constrained to only produce output matching this shape." It's the difference between asking someone to follow a format and handing them a form with fields that can only be filled in specific ways.
+
+## Why Pydantic sits on top of that, not instead of it
+
+Provider-side schema constraints reduce the chance of malformed output; they don't make malformed output impossible, and they don't validate business logic the schema itself can't express. That's where a Pydantic model does the actual enforcement — parsing the response and either succeeding with a fully-typed object, or raising a validation error that the pipeline can catch and react to explicitly, instead of quietly forwarding bad data to the next stage:
+
+```python
+from pydantic import BaseModel
+
+class DamageAssessment(BaseModel):
+    damage_type: str
+    severity: int          # 1-5
+    affected_area_pct: float
+    is_consistent_with_claim: bool
+    confidence: float
+
+response = model.generate_content(
+    prompt,
+    generation_config={
+        "response_mime_type": "application/json",
+        "response_schema": DamageAssessment.model_json_schema(),
+    },
+)
+
+# Raises ValidationError instead of silently passing through
+# whatever the model happened to return
+assessment = DamageAssessment.model_validate_json(response.text)
+```
+
+Two layers, two different jobs: the provider-side schema narrows what the model is even capable of generating; Pydantic is the actual gate that decides whether the result is allowed to reach the rule engine at all. Neither one alone is the same guarantee as having both.
+
+## The part that matters for a two-stage pipeline specifically
+
+The whole reason to split "LLM visual judgment" from "deterministic rule engine" in the first place is that you don't want the fuzzy, judgment-based part of the system anywhere near the part that has to be consistent, auditable, and explainable — a risk-flagging decision on an insurance claim isn't somewhere you want "the model felt like phrasing it differently this time" to leak in. That separation only holds if the interface between the two stages is actually solid. An unconstrained text response is a leaky interface — it lets the model's non-determinism bleed into a part of the system that was specifically designed not to have any.
+
+There's a security angle here too, not just a reliability one. Feeding a model images as evidence opens the door to prompt injection embedded in the image itself — adversarial text baked into a photo, trying to steer the model's output. A schema doesn't stop the model from being influenced by injected content, but it does limit the blast radius: the response can still only take the shape the schema allows. An injection attempt that tries to make the model emit extra instructions, additional fields, or a different response format entirely has nowhere to go — the output is still forced through the same typed gate as everything else.
+
+## The part that generalizes
+
+This is the same underlying idea as validating any external input at the boundary of your system, just with an unusually creative source of malformed data. An LLM response is, functionally, user input that happens to be generated by a very sophisticated autocomplete — and the same discipline that says "don't trust a form submission or an API response without validating it" applies here too. The failure mode is just quieter: a bad form submission usually throws an obvious error; a slightly-malformed LLM response tends to almost work, which is a much easier thing to ship by accident.

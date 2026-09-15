@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Globe2, Sun, Moon, Search } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
 import { reveal } from './animations'
 import { useState, useEffect, useRef } from 'react'
 import { useTheme } from 'next-themes'
@@ -36,7 +36,7 @@ export function Header() {
     }
 
     fetchNowPlaying()
-    const interval = setInterval(fetchNowPlaying, 10000)
+    const interval = setInterval(fetchNowPlaying, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -44,7 +44,7 @@ export function Header() {
     if (phase === 'inserting') {
       timeoutRef.current = setTimeout(() => setPhase('inserted'), 1600)
     } else if (phase === 'inserted') {
-      timeoutRef.current = setTimeout(() => setPhase('ejecting'), 3000)
+      timeoutRef.current = setTimeout(() => setPhase('ejecting'), 1800)
     } else if (phase === 'ejecting') {
       timeoutRef.current = setTimeout(() => setPhase('idle'), 1600)
     }
@@ -97,8 +97,6 @@ export function Header() {
 
       </div>
       <nav className="header-actions" aria-label="Quick actions">
-        <button type="button" aria-label="Search"><Search /></button>
-        <button type="button" aria-label="Language"><Globe2 /></button>
         <button 
           type="button" 
           aria-label="Display settings" 

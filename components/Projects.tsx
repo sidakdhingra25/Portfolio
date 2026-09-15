@@ -11,18 +11,29 @@ type Project = {
   desc: string;
   image?: string;
   video?: string;
+  link?: string;
 }
 
 const projects: Project[] = [
-  { id: 'project-tippo', video: '/PinGrab_1788980631473.mp4', name: 'Lorem', desc: 'Lorem ipsum dolor sit amet.' },
-  { id: 'project-memory', video: '/PinGrab_1788980653499.mp4', name: 'Schelo', desc: 'Schelo ipsum dolor sit amet.' },
-  { id: 'project-finally', image: '/Screenshot 2026-09-09 034724.png', name: 'Ipsum', desc: 'Ipsum dolor sit amet.' },
+  { id: 'project-tippo', video: '/damage-claim-sytem-agaent.mp4', name: 'Claim AI', desc: 'AI-Powered Damage Claim Agent', link: 'https://damage-claim-frontend.vercel.app/' },
+  { id: 'project-walled', image: '/walled.png', name: 'Walled', desc: 'Generate TO-DO wallpapers in seconds!', link: 'https://walled-sand.vercel.app/' },
+  { id: 'project-schelo', image: '/schelo-og.png', name: 'Schelo', desc: 'Runtime type safety for your APIs', link: 'https://schelo.xyz/' },
 ]
 
 export function Projects() {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [hoveredVideo, setHoveredVideo] = useState<string | null>(null)
+  const [isMuted, setIsMuted] = useState(true)
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({})
+  const modalVideoRef = useRef<HTMLVideoElement | null>(null)
+
+  const handleCloseModal = () => {
+    if (selectedId && videoRefs.current[selectedId] && modalVideoRef.current) {
+      videoRefs.current[selectedId]!.currentTime = modalVideoRef.current.currentTime;
+    }
+    setSelectedId(null)
+  }
 
   useEffect(() => {
     Object.entries(videoRefs.current).forEach(([id, video]) => {
@@ -36,7 +47,7 @@ export function Projects() {
   }, [selectedId])
 
   return (
-    <motion.section variants={reveal} aria-labelledby="projects-title">
+    <motion.section id="projects" variants={reveal} aria-labelledby="projects-title">
       <div className="section-heading">
         <h2 id="projects-title">Projects.</h2>
         <div className="view-toggle">
@@ -79,17 +90,30 @@ export function Projects() {
               aria-hidden="true"
               style={{ borderRadius: view === 'grid' ? '18px' : '8px' }}
               transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
+              onMouseEnter={() => setHoveredVideo(project.id)}
+              onMouseLeave={() => setHoveredVideo(null)}
             >
               {project.video ? (
                 <video 
                   ref={(el) => { videoRefs.current[project.id] = el }}
                   src={project.video} 
-                  autoPlay loop muted playsInline disablePictureInPicture 
+                  autoPlay loop muted={view === 'list' ? true : isMuted}
+                  onVolumeChange={(e) => {
+                    if (view === 'grid') setIsMuted(e.currentTarget.muted)
+                  }}
+                  controls={view === 'grid' && hoveredVideo === project.id && selectedId !== project.id}
+                  controlsList="nodownload"
+                  playsInline disablePictureInPicture 
                   onContextMenu={(e) => e.preventDefault()} 
-                  style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', pointerEvents: 'none' }} 
+                  onPlay={(e) => {
+                    if (selectedId === project.id) {
+                      e.currentTarget.pause()
+                    }
+                  }}
+                  style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', pointerEvents: (view === 'grid' && hoveredVideo === project.id && selectedId !== project.id) ? 'auto' : 'none' }} 
                 />
               ) : (
-                project.image && <Image src={project.image} alt={project.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" priority />
+                project.image && <img src={project.image} alt={project.name} className="object-cover" style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
               )}
             </motion.div>
             
@@ -117,7 +141,7 @@ export function Projects() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setSelectedId(null)}
+              onClick={handleCloseModal}
             />
             
             <div className="modal-container-fixed" style={{ pointerEvents: 'none' }}>
@@ -137,7 +161,7 @@ export function Projects() {
                       exit={{ opacity: 0, transition: { duration: 0 } }}
                       transition={{ delay: 0.4, duration: 0.2 }}
                       className="modal-close" 
-                      onClick={() => setSelectedId(null)} 
+                      onClick={handleCloseModal} 
                       aria-label="Close modal"
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -148,33 +172,69 @@ export function Projects() {
                       className="modal-media" 
                       style={{ borderRadius: '24px' }}
                       transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
+                      onMouseEnter={() => setHoveredVideo(`modal-${project.id}`)}
+                      onMouseLeave={() => setHoveredVideo(null)}
                     >
                       {project.video ? (
-                        <video src={project.video} autoPlay loop muted playsInline disablePictureInPicture onContextMenu={(e) => e.preventDefault()} style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', pointerEvents: 'none' }} />
+                        <video 
+                          ref={(el) => { 
+                            modalVideoRef.current = el;
+                            if (el && videoRefs.current[project.id] && el.currentTime === 0) {
+                              el.currentTime = videoRefs.current[project.id]?.currentTime || 0;
+                            }
+                          }}
+                          src={project.video} 
+                          autoPlay loop muted={isMuted}
+                          onVolumeChange={(e) => setIsMuted(e.currentTarget.muted)}
+                          controls={hoveredVideo === `modal-${project.id}`}
+                          controlsList="nodownload"
+                          playsInline disablePictureInPicture 
+                          onContextMenu={(e) => e.preventDefault()} 
+                          style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', pointerEvents: hoveredVideo === `modal-${project.id}` ? 'auto' : 'none' }} 
+                        />
                       ) : (
-                        project.image && <Image src={project.image} alt={project.name} fill className="object-cover" priority />
+                        project.image && <img src={project.image} alt={project.name} className="object-cover" style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
                       )}
                     </motion.div>
                     
-                    <div className="modal-content">
-                      <motion.strong 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, transition: { duration: 0 } }}
-                        transition={{ delay: 0.35, duration: 0.2 }}
-                        className="modal-title"
-                      >
-                        {project.name}
-                      </motion.strong>
-                      <motion.span 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, transition: { duration: 0 } }}
-                        transition={{ delay: 0.35, duration: 0.2 }}
-                        className="modal-desc"
-                      >
-                        {project.desc}
-                      </motion.span>
+                    <div className="modal-content" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <motion.strong 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0, transition: { duration: 0 } }}
+                          transition={{ delay: 0.35, duration: 0.2 }}
+                          className="modal-title"
+                        >
+                          {project.name}
+                        </motion.strong>
+                        <motion.span 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0, transition: { duration: 0 } }}
+                          transition={{ delay: 0.35, duration: 0.2 }}
+                          className="modal-desc"
+                        >
+                          {project.desc}
+                        </motion.span>
+                      </div>
+                      
+                      {project.link && (
+                        <motion.a
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, transition: { duration: 0 } }}
+                          transition={{ delay: 0.4, duration: 0.2 }}
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium bg-[var(--line)] hover:bg-[var(--muted)]/20 transition-colors rounded-full text-[var(--foreground)] shrink-0"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          Visit site
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                        </motion.a>
+                      )}
                     </div>
                   </motion.div>
                 )

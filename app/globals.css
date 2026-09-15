@@ -159,16 +159,16 @@ button { font: inherit; }
 }
 
 .name { font-size: 14px; font-weight: 500; }
-.eyebrow, .filters, .project-meta span { color: var(--muted); font-size: 11.5px; }
+.eyebrow, .filters, .project-meta span { color: var(--foreground); font-size: 11.5px; }
 .header-actions { gap: 8px; }
 .header-actions button { display: grid; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--surface); color: var(--muted); cursor: pointer; }
 .header-actions svg { width: 14px; height: 14px; stroke-width: 1.8; }
-.intro { color: var(--copy); font-size: 12.5px; line-height: 1.75; max-width: 650px; }
+.intro { color: var(--copy); font-size: 12.5px; line-height: 1.65; max-width: 650px; }
 .inline-flag { font-size: 14px; }
 .intro .pill { display: inline-flex; align-items: center; font-weight: 500; color: var(--foreground); text-decoration: underline; text-decoration-color: #565650; text-underline-offset: 3px; background: transparent; padding: 0 2px; }
-.intro p { margin: 0 0 24px; }
+.intro p { margin: 0 0 14px; }
 .intro p:last-child { margin-bottom: 0; }
-.location { margin-bottom: 14px !important; color: #000000; font-size: 13px; }
+.location { margin-bottom: 14px !important; color: var(--foreground); font-size: 13px; }
 .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--surface); color: var(--foreground); font-size: 12.5px; line-height: 1.55; }
 
 
@@ -200,12 +200,12 @@ h2 { margin: 0; font-size: 14px; font-weight: 500; }
     grid-column: 1 / 9;
     grid-row: 1 / 3;
   }
-  .project-grid .project-memory {
+  .project-grid .project-walled {
     grid-column: 9 / 13;
     grid-row: 1 / 5;
     align-self: center;
   }
-  .project-grid .project-finally {
+  .project-grid .project-schelo {
     grid-column: 3 / 9;
     grid-row: 3 / 5;
   }
@@ -225,8 +225,9 @@ h2 { margin: 0; font-size: 14px; font-weight: 500; }
 .project-meta strong { font-weight: 500; }
 
 .project-tippo .project-art { background: linear-gradient(145deg, #cfe8ed, #f5f4ef 62%); color: #111; }
-.project-memory .project-art { background: #242722; }
-.project-finally .project-art { background: #f1f1ef; color: #111; }
+.project-schelo .project-art { background: var(--surface); }
+.dark .project-schelo .project-art { background: #242722; }
+.project-walled .project-art { background: #f1f1ef; color: #111; }
 .project-lumy .project-art { background: #431c91; }
 .project-portfolio .project-art { background: #d8d6d0; color: #111; }
 .project-dashboard .project-art { background: #1984e8; }
@@ -295,9 +296,9 @@ h2 { margin: 0; font-size: 14px; font-weight: 500; }
 /* Picker Component */
 .picker-wrapper { display: flex; align-items: center; font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; font-size: 26px; }
 .picker-fixed-label { color: var(--foreground); font-weight: 500; padding-right: 8px; }
-.picker-container { height: 200px; flex: 1; overflow-y: scroll; overflow-x: hidden; touch-action: pan-y; scroll-snap-type: y mandatory; -ms-overflow-style: none; scrollbar-width: none; mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); padding: 76px 0; }
+.picker-container { position: relative; height: 200px; flex: 1; overflow-y: scroll; overflow-x: hidden; touch-action: pan-y; scroll-snap-type: y mandatory; -ms-overflow-style: none; scrollbar-width: none; mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); padding: 76px 0; }
 .picker-container::-webkit-scrollbar { display: none; }
-.picker-item { height: 48px; line-height: 48px; white-space: nowrap; scroll-snap-align: center; color: var(--copy); opacity: 0.25; transition: opacity 0.2s ease, color 0.2s ease; cursor: pointer; }
+.picker-item { display: block; height: 48px; line-height: 48px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; scroll-snap-align: center; color: var(--copy); opacity: 0.25; transition: opacity 0.2s ease, color 0.2s ease; cursor: pointer; }
 
 .picker-item.active { opacity: 1; color: var(--foreground); }
 .picker-item .text-highlight { color: var(--muted); font-style: italic; transition: color 0.2s ease; }
@@ -402,4 +403,85 @@ h2 { margin: 0; font-size: 14px; font-weight: 500; }
 .avatar-trigger:hover .spotify-tooltip.can-show {
   opacity: 1;
   transform: translateY(-50%) translateX(0);
+}
+
+/* Markdown Styling */
+.markdown-body {
+  color: var(--copy);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.markdown-body > *:first-child { margin-top: 0; }
+.markdown-body > *:last-child { margin-bottom: 0; }
+.markdown-body p, 
+.markdown-body ul, 
+.markdown-body ol, 
+.markdown-body blockquote, 
+.markdown-body pre {
+  margin-top: 0;
+  margin-bottom: 1.25em;
+}
+.markdown-body h1, 
+.markdown-body h2, 
+.markdown-body h3, 
+.markdown-body h4, 
+.markdown-body h5, 
+.markdown-body h6 {
+  color: var(--foreground);
+  font-weight: 500;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.markdown-body h1 { font-size: 1.75em; }
+.markdown-body h2 { font-size: 1.5em; margin-top: 2em; }
+.markdown-body h3 { font-size: 1.25em; }
+.markdown-body h4 { font-size: 1em; }
+.markdown-body a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.markdown-body ul { list-style-type: disc; padding-left: 1.5em; }
+.markdown-body ol { list-style-type: decimal; padding-left: 1.5em; }
+.markdown-body li + li { margin-top: 0.25em; }
+.markdown-body blockquote {
+  border-left: 3px solid var(--line);
+  padding-left: 1em;
+  color: var(--muted);
+  font-style: italic;
+}
+.markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  background-color: var(--panel);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+}
+.markdown-body pre {
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.markdown-body pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.85em;
+  color: var(--copy);
+}
+.markdown-body hr {
+  height: 1px;
+  border: none;
+  background-color: var(--line);
+  margin: 2em 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
 }

@@ -1,12 +1,15 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { LenisProvider } from '@/components/LenisProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sidak Dhingra — Software developer and more',
+  title: 'Sidak Dhingra',
   description: 'Portfolio of Sidak Dhingra, a software developer based in India.',
-  generator: 'v0.app',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -22,7 +25,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          <LenisProvider>
+            {children}
+          </LenisProvider>
           {process.env.NODE_ENV === 'production' && <Analytics />}
         </ThemeProvider>
       </body>

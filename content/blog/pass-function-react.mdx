@@ -1,0 +1,79 @@
+---
+title: "Why you can't pass a function as a prop from a Server Component to a Client Component"
+date: "Sept 15, 2026"
+category: "Engineering"
+readTime: "6 min read"
+---
+
+In plain React, passing a callback down as a prop is the most ordinary thing you can do — it's half of how components talk to each other. Next.js's App Router breaks that assumption the instant a Server Component tries to hand a function to a Client Component. Code that would work in any React tutorial throws at build or render time. The reason isn't a Next.js limitation you can configure around — it's a direct consequence of what a Server Component actually is.
+
+## What actually crosses the boundary
+
+A Server Component doesn't render to HTML the way you'd expect from server-side rendering in the old sense. It renders to a special serialized format — the RSC payload — that describes the component tree: which elements to render, which parts are references to Client Component modules (so the browser knows what to hydrate), and the props to pass to each. That payload has to be something that can be turned into a string, sent over the network, and reconstructed on the other end. It is, at its core, a very deliberate flavor of serialization — closer to JSON than to a live JavaScript object graph.
+
+Plain data survives that trip fine: strings, numbers, plain objects, arrays, even nested React elements. A function does not, and it's not an oversight — it's a direct consequence of what a function actually is in JavaScript.
+
+## Why a function specifically can't serialize
+
+A function isn't just its source code. It's a closure — source code plus a reference to whatever scope it was created in, which might include local variables, other functions, database connections, environment secrets, or anything else that only exists in that specific server process at that specific moment. There's no general way to take that closure, turn it into a plain data representation, ship it to a browser, and reconstruct something that behaves the same way. The scope it depends on simply doesn't exist on the client.
+
+Try it anyway, and this is what actually happens:
+
+```tsx
+// page.tsx — a Server Component (no 'use client' directive)
+import SaveButton from './save-button'
+
+export default function Page() {
+  function handleSave() {
+    console.log('saved on the server')
+  }
+
+  return <SaveButton onSave={handleSave} />
+}
+```
+
+```tsx
+// save-button.tsx
+'use client'
+
+export default function SaveButton({ onSave }: { onSave: () => void }) {
+  return <button onClick={onSave}>Save</button>
+}
+```
+
+Next.js refuses to build this, with a specific, deliberate error:
+
+```
+Error: Functions cannot be passed directly to Client Components
+unless you explicitly expose it by marking it with "use server".
+```
+
+That's not a vague serialization warning — it's the framework naming the exact rule and the exact escape hatch in the same sentence.
+
+## The one thing that looks like an exception
+
+Server Actions look, at first glance, like exactly this — a function, defined on the server, passed down and called from the client:
+
+```tsx
+// page.tsx — Server Component
+export default function Page() {
+  async function save(formData: FormData) {
+    'use server'
+    // runs only on the server
+  }
+
+  return <SaveForm onSave={save} />
+}
+```
+
+This works. But it's not React quietly serializing a closure after all — it's a different mechanism entirely, one Next.js special-cases on purpose. The `'use server'` directive tells the build step to compile that function into a reference — effectively an ID pointing back to a specific server-side endpoint — rather than trying to ship the function itself. What actually crosses the boundary is that reference, not the closure. When the client "calls" it, what really happens is a network request back to the server, which looks up the real function by that ID and runs it there. The client never receives executable code; it receives a pointer with instructions for how to ask the server to run it.
+
+That's a meaningfully different thing from "functions are serializable now." It's a narrow, explicitly blessed exception — the framework building you a remote procedure call and disguising it as a normal function prop, not a general capability you can extend to any callback by adding the directive to something that isn't actually meant to run as an RPC.
+
+## Where this doesn't apply
+
+None of this affects passing functions between two Client Components. Once you're inside client-rendered React, running entirely in the browser, there's no serialization boundary to cross — it's just normal React, and callbacks work exactly the way React tutorials say they do. The restriction is specifically about the seam where a server-rendered payload has to become a live client tree — it's a boundary condition, not a blanket rule about functions in React.
+
+## The part that generalizes
+
+This is really the same constraint you hit anywhere a JavaScript value has to leave its own runtime and be reconstructed somewhere else. `postMessage` between a page and a worker or an iframe silently drops functions for the same reason — structured clone can't serialize a closure any more than the RSC payload format can. `JSON.stringify` on an object containing a function just omits that key entirely, with no error at all, which is arguably worse than what Next.js does here. Anywhere a value needs to survive a trip across a process boundary, a network hop, or a storage layer, functions are the one JavaScript value type that fundamentally can't make the crossing — because a function isn't really data, it's a promise about behavior tied to a specific place in memory, and a promise like that doesn't travel.
