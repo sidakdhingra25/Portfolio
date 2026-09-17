@@ -38,7 +38,7 @@ body { margin: 0; background: var(--background); color: var(--foreground); font-
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 
-.portfolio-shell { min-height: 100vh; padding: 84px 24px 120px; }
+.portfolio-shell { min-height: 100dvh; padding: 84px 24px 20px; }
 .portfolio-frame { width: min(100%, 550px); margin: 0 auto; }
 .portfolio-frame > section { margin-top: 92px; }
 .portfolio-frame > section.intro { margin-top: 0; }
@@ -161,7 +161,7 @@ button { font: inherit; }
 .name { font-size: 14px; font-weight: 500; }
 .eyebrow, .filters, .project-meta span { color: var(--foreground); font-size: 11.5px; }
 .header-actions { gap: 8px; }
-.header-actions button { display: grid; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.header-actions button, .header-actions a { display: grid; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--surface); color: var(--muted); cursor: pointer; text-decoration: none; }
 .header-actions svg { width: 14px; height: 14px; stroke-width: 1.8; }
 .intro { color: var(--copy); font-size: 12.5px; line-height: 1.65; max-width: 650px; }
 .inline-flag { font-size: 14px; }
@@ -295,6 +295,7 @@ h2 { margin: 0; font-size: 14px; font-weight: 500; }
 
 /* Picker Component */
 .picker-wrapper { display: flex; align-items: center; font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; font-size: 26px; }
+@media (max-width: 640px) { .picker-wrapper { font-size: 20px; } }
 .picker-fixed-label { color: var(--foreground); font-weight: 500; padding-right: 8px; }
 .picker-container { position: relative; height: 200px; flex: 1; overflow-y: scroll; overflow-x: hidden; touch-action: pan-y; scroll-snap-type: y mandatory; -ms-overflow-style: none; scrollbar-width: none; mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 65%, transparent 100%); padding: 76px 0; }
 .picker-container::-webkit-scrollbar { display: none; }

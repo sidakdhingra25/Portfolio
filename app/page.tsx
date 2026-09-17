@@ -7,6 +7,7 @@ import { Projects } from '../components/Projects'
 
 import { Feed } from '../components/Feed'
 import { Systems } from '@/components/Systems'
+import { Footer } from '../components/Footer'
 
 export default function Page() {
   return (
@@ -22,6 +23,7 @@ export default function Page() {
         <Projects />
         <Systems />
         <Feed />
+        <Footer />
       </motion.div>
     </main>
   )

@@ -66,7 +66,7 @@ export function Intro() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 5, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[var(--panel)] border border-[var(--line)] shadow-sm rounded-lg px-3 py-2 flex items-center gap-3 z-10"
+                className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 bg-[var(--panel)] border border-[var(--line)] shadow-sm rounded-lg px-3 py-2 flex items-center gap-3 z-10"
               >
                 <span className="text-[13px] text-[var(--foreground)] font-medium whitespace-nowrap font-mono">sidakdhingra73@gmail.com</span>
                 <button
