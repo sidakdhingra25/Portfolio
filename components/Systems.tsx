@@ -13,6 +13,7 @@ const questions = [
 ]
 
 export function Systems() {
+  const sectionRef = useRef<HTMLElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -51,42 +52,33 @@ export function Systems() {
   }
 
   useEffect(() => {
+    const section = sectionRef.current
     const container = containerRef.current
-    if (!container) return
+    if (!section || !container) return
 
-    let wheelTimeout: NodeJS.Timeout
     let wheelAccumulator = 0
-    let lastWheelTime = Date.now()
+    let wheelTimeout: NodeJS.Timeout
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
-      isWheelScrollingRef.current = true
-      
-      clearTimeout(wheelTimeout)
-      wheelTimeout = setTimeout(() => {
-        isWheelScrollingRef.current = false
-        wheelAccumulator = 0
-      }, 150)
+      e.stopPropagation()
 
-      const now = Date.now()
-      if (now - lastWheelTime > 150) {
-        wheelAccumulator = 0
-      }
-      lastWheelTime = now
+      clearTimeout(wheelTimeout)
+      wheelTimeout = setTimeout(() => { wheelAccumulator = 0 }, 150)
+
       wheelAccumulator += e.deltaY
-      
+
       if (Math.abs(wheelAccumulator) >= 50) {
         const direction = wheelAccumulator > 0 ? 1 : -1
         const nextIndex = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + direction))
-        
         if (nextIndex !== targetIndexRef.current) {
           executeProgrammaticScroll(nextIndex)
         }
         wheelAccumulator = 0
       }
     }
-    
-    container.addEventListener('wheel', handleWheel, { passive: false })
+
+    section.addEventListener('wheel', handleWheel, { passive: false })
 
     const handleScroll = () => {
       if (!container) return
@@ -119,7 +111,7 @@ export function Systems() {
     handleScroll()
     
     return () => {
-      container.removeEventListener('wheel', handleWheel)
+      section.removeEventListener('wheel', handleWheel)
       container.removeEventListener('scroll', handleScroll)
       clearTimeout(wheelTimeout)
       clearTimeout(programmaticTimeoutRef.current)
@@ -151,6 +143,24 @@ export function Systems() {
     return () => clearInterval(intervalId)
   }, [isHovered])
 
+  useEffect(() => {
+    if (!isHovered) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const direction = e.key === 'ArrowDown' ? 1 : -1
+        const nextIndex = Math.max(0, Math.min(questions.length - 1, targetIndexRef.current + direction))
+        if (nextIndex !== targetIndexRef.current) {
+          executeProgrammaticScroll(nextIndex)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isHovered])
+
   const handleItemClick = (index: number) => {
     if (index !== activeIndex) {
       executeProgrammaticScroll(index)
@@ -165,6 +175,8 @@ export function Systems() {
       aria-labelledby="systems-title"
       onPointerEnter={() => setIsHovered(true)}
       onPointerLeave={() => setIsHovered(false)}
+      transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
+      ref={sectionRef}
     >
       <div className="systems-intro">
         <div>

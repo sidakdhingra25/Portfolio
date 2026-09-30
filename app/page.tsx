@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, LayoutGroup } from 'framer-motion'
 import { Header } from '../components/Header'
 import { Intro } from '../components/Intro'
 import { Projects } from '../components/Projects'
@@ -20,10 +20,12 @@ export default function Page() {
       >
         <Header />
         <Intro />
-        <Projects />
-        <Systems />
-        <Feed />
-        <Footer />
+        <LayoutGroup>
+          <Projects />
+          <Systems />
+          <Feed />
+          <Footer />
+        </LayoutGroup>
       </motion.div>
     </main>
   )

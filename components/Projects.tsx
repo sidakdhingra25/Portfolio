@@ -47,8 +47,8 @@ export function Projects() {
   }, [selectedId])
 
   return (
-    <motion.section id="projects" variants={reveal} aria-labelledby="projects-title">
-      <div className="section-heading">
+    <motion.section layout id="projects" variants={reveal} aria-labelledby="projects-title" transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}>
+      <motion.div layout className="section-heading" transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}>
         <h2 id="projects-title">Projects.</h2>
         <div className="view-toggle">
           <button 
@@ -72,8 +72,8 @@ export function Projects() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
           </button>
         </div>
-      </div>
-      <motion.div layout className={view === 'grid' ? 'project-grid' : 'project-list'}>
+      </motion.div>
+      <motion.div layout className={view === 'grid' ? 'project-grid' : 'project-list'} transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}>
         {projects.map((project, index) => (
           <motion.article 
             layout
@@ -82,6 +82,7 @@ export function Projects() {
             className={view === 'grid' ? `project-card ${project.id}` : `project-card-list ${project.id}`} 
             onClick={() => setSelectedId(project.id)}
             transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
+            style={{ opacity: selectedId === project.id ? 0 : 1 }}
           >
             <motion.div 
               layout 
@@ -117,15 +118,26 @@ export function Projects() {
               )}
             </motion.div>
             
-            {view === 'list' && (
-              <motion.div layout className="project-meta-list">
-                <motion.strong layout layoutId={`title-${project.id}`} className="project-title-list" transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}>{project.name}</motion.strong>
-                <motion.span layout layoutId={`desc-${project.id}`} className="project-desc-list" transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}>{project.desc}</motion.span>
+            {view === 'list' && selectedId !== project.id && (
+              <motion.div 
+                layout
+                className="project-meta-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.3, layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
+              >
+                <strong className="project-title-list">{project.name}</strong>
+                <span className="project-desc-list">{project.desc}</span>
               </motion.div>
             )}
 
-            {view === 'list' && (
-              <motion.div layout className="project-action-list">
+            {view === 'list' && selectedId !== project.id && (
+              <motion.div 
+                className="project-action-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
+              >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </motion.div>
             )}

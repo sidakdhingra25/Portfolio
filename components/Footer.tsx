@@ -6,8 +6,10 @@ import { reveal } from './animations'
 export function Footer() {
   return (
     <motion.footer 
+      layout
       className="w-full flex justify-between items-center text-[9.5px] sm:text-[12.5px] whitespace-nowrap text-[var(--muted)] border-t border-[var(--line)] mt-[60px] pt-[20px]" 
       variants={reveal}
+      transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
     >
       <div>
         made with ❤️ by Sidak Dhingra
