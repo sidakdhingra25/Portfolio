@@ -1,0 +1,30 @@
+# Sidak Dhingra
+
+> Full-stack Developer, 23, based in India. Currently working as a Software Developer at QuadLabs, building web applications while also spending my time outside work building my own projects, exploring new ideas, and experimenting with different technologies.
+
+Design-curious and drawn to creating simple, thoughtful interfaces. Less interested in whether an agent gets the right answer than in why it got there.
+
+## Work
+
+- [Portfolio](https://www.sidak.work/): Home page
+- [QuadLabs](https://www.quadlabs.com/): Current role as Software Developer, building web applications
+
+## Projects
+
+- [Claim AI](https://damage-claim-frontend.vercel.app/): AI-Powered Damage Claim Agent
+- [Walled](https://walled-sand.vercel.app/): Generate TO-DO wallpapers in seconds!
+- [Schelo](https://schelo.xyz/): Runtime type safety for your APIs
+
+## Decisions
+
+- [Why inline arrow functions break OnPush?](https://www.sidak.work/blog/inline-arrow-function)
+- [Why you can't pass a function as a prop from a Server Component to a Client Component](https://www.sidak.work/blog/pass-function-react)
+- [Why you should force an LLM's output into a schema instead of just parsing whatever text comes back](https://www.sidak.work/blog/llm-schema)
+
+## Contact
+
+- Email: sidakdhingra73@gmail.com
+- X: https://x.com/justsidak
+- GitHub: https://github.com/sidakdhingra25
+- LinkedIn: https://www.linkedin.com/in/sidak-dhingra/
+- Resume: https://drive.google.com/file/d/1IJrEkk3xGH4vj6GgFeI6wiRORg02z-fG/view?usp=sharing

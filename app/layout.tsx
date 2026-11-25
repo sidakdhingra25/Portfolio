@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.sidak.work'),
   title: 'Sidak Dhingra',
   description: 'Portfolio of Sidak Dhingra, a software developer based in India.',
   icons: {
@@ -41,9 +42,29 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Sidak Dhingra',
+  url: 'https://www.sidak.work',
+  description:
+    'Full-stack Developer based in India, currently working as a Software Developer at QuadLabs, building web applications.',
+  sameAs: [
+    'https://github.com/sidakdhingra25',
+    'https://www.linkedin.com/in/sidak-dhingra/',
+    'https://x.com/justsidak',
+  ],
+}
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LenisProvider>

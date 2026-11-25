@@ -80,6 +80,7 @@ export function Projects() {
             layoutId={`card-${project.id}`}
             key={project.id} 
             className={view === 'grid' ? `project-card ${project.id}` : `project-card-list ${project.id}`} 
+            aria-label={`${project.name} — ${project.desc}`}
             onClick={() => setSelectedId(project.id)}
             transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
             style={{ opacity: selectedId === project.id ? 0 : 1 }}
@@ -88,7 +89,6 @@ export function Projects() {
               layout 
               layoutId={`art-${project.id}`}
               className={view === 'grid' ? 'project-art' : 'project-art-list'} 
-              aria-hidden="true"
               style={{ borderRadius: view === 'grid' ? '18px' : '8px' }}
               transition={{ layout: { type: 'tween', duration: 0.4, ease: 'easeOut' } }}
               onMouseEnter={() => setHoveredVideo(project.id)}
@@ -98,6 +98,7 @@ export function Projects() {
                 <video 
                   ref={(el) => { videoRefs.current[project.id] = el }}
                   src={project.video} 
+                  aria-label={`${project.name} — ${project.desc}`}
                   autoPlay loop muted={view === 'list' ? true : isMuted}
                   onVolumeChange={(e) => {
                     if (view === 'grid') setIsMuted(e.currentTarget.muted)
@@ -114,7 +115,7 @@ export function Projects() {
                   style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', pointerEvents: (view === 'grid' && hoveredVideo === project.id && selectedId !== project.id) ? 'auto' : 'none' }} 
                 />
               ) : (
-                project.image && <img src={project.image} alt={project.name} className="object-cover" style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
+                project.image && <img src={project.image} alt={`${project.name} — ${project.desc}`} className="object-cover" style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
               )}
             </motion.div>
             
